@@ -1,55 +1,86 @@
-<form id="tourForm">
-    <input type="text" id="embarcacion" placeholder="Embarcación" required />
-    <input type="text" id="capitan" placeholder="Capitán" required />
-    <input type="text" id="ayudante" placeholder="Ayudante" required />
-    <input type="text" id="estado" placeholder="Estado" required />
-    <input type="number" id="personas" placeholder="Número de personas" required />
-    <input type="date" id="fechaTour" required />
-    <input type="time" id="horaTour" required />
-    <input type="number" id="tiempo" placeholder="Tiempo (en horas)" required />
-    <input type="number" id="precio" placeholder="Precio" required />
-    <input type="text" id="pago" placeholder="Forma de pago" required />
-    <input type="text" id="conocio" placeholder="¿Cómo nos conoció?" required />
-    <input type="text" id="cliente" placeholder="Nombre del cliente" required />
-    <select id="gestionadoPor">
-      <option value="israel">Israel</option>
-      <option value="admin">Admin</option>
-    </select>
-    <button type="submit">Guardar Tour</button>
-  </form>
+<!-- Firebase SDK - Versión compatible con <script> -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   
-  <script type="module">
-    import { db, auth } from "./firebase.js";
-    import { collection, addDoc } from "firebase/firestore";
+  <!-- Configuración de Firebase -->
+  <script src="firebase-config.js"></script>
   
-    document.getElementById("tourForm").addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const fechaHora = new Date().toISOString();
+  <!-- Página para agregar tour -->
+  <input type="text" id="embarcacion" placeholder="Embarcación">
+  <input type="text" id="capitan" placeholder="Capitán">
+  <input type="text" id="ayudante" placeholder="Ayudante">
+  <input type="number" id="personas" placeholder="Número de personas">
+  <input type="date" id="fecha_tour">
+  <input type="time" id="hora_tour">
+  <input type="number" id="tiempo" placeholder="Duración en horas">
+  <input type="number" id="precio" placeholder="Precio">
+  <input type="text" id="pago" placeholder="Método de pago">
+  <input type="text" id="como_nos_conocio" placeholder="¿Cómo nos conoció?">
+  <input type="text" id="cliente" placeholder="Nombre del cliente">
+  <select id="gestionado_por">
+    <option value="info@israelmolina.com">Israel</option>
+    <option value="fran@manglarestour.com">Fran</option>
+  </select>
+  <button onclick="agregarTour()">Agregar Tour</button>
   
+  <!-- Botón para cerrar sesión -->
+  <button onclick="cerrarSesion()">Cerrar sesión</button>
+  
+  <script>
+    // Verifica si el usuario está autenticado
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        // Si no está autenticado, redirige al login
+        window.location.href = "index.html";
+      } else {
+        console.log("Usuario autenticado:", user.email);
+      }
+    });
+  
+    function generarId() {
+  const now = new Date();
+  return now.toISOString().replace(/T/, '-').replace(/:/g, '-').slice(0, 19);
+}
+
+    // Función para agregar el tour
+    function agregarTour() {
+     // const now = new Date();
+    //  const id = `reserva-${Date.now()}`;
+    const id = generarId(); // Genera el ID con el formato de fecha y hora
+
       const tour = {
         embarcacion: document.getElementById("embarcacion").value,
         capitan: document.getElementById("capitan").value,
         ayudante: document.getElementById("ayudante").value,
-        estado: document.getElementById("estado").value,
-        personas: Number(document.getElementById("personas").value),
-        fechaTour: document.getElementById("fechaTour").value,
-        horaTour: document.getElementById("horaTour").value,
-        tiempo: Number(document.getElementById("tiempo").value),
-        precio: Number(document.getElementById("precio").value),
+        estado: "Pendiente",
+        personas: parseInt(document.getElementById("personas").value),
+        fecha_tour: document.getElementById("fecha_tour").value,
+        hora_tour: document.getElementById("hora_tour").value,
+        tiempo: parseInt(document.getElementById("tiempo").value),
+        precio: parseFloat(document.getElementById("precio").value),
         pago: document.getElementById("pago").value,
-        conocio: document.getElementById("conocio").value,
+        como_nos_conocio: document.getElementById("como_nos_conocio").value,
         cliente: document.getElementById("cliente").value,
-        gestionadoPor: document.getElementById("gestionadoPor").value,
-        fechaRegistro: fechaHora,
+        gestionado_por: document.getElementById("gestionado_por").value
       };
   
-      try {
-        await addDoc(collection(db, "tours"), tour);
-        alert("Tour registrado exitosamente");
-        window.location.href = "escritorio.html";
-      } catch (error) {
-        console.error("Error al registrar tour: ", error);
-      }
-    });
+      db.collection("reservas").doc(id).set(tour)
+        .then(() => alert("Tour agregado"))
+        .catch(error => alert("Error: " + error.message));
+    }
+  
+    // Función para cerrar sesión
+    function cerrarSesion() {
+      firebase.auth().signOut()
+        .then(() => {
+          // Redirige al login después de cerrar sesión
+          window.location.href = "index.html";
+        })
+        .catch(error => {
+          console.error("Error al cerrar sesión:", error.message);
+          alert("Hubo un error al cerrar sesión.");
+        });
+    }
   </script>
   

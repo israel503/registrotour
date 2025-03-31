@@ -1,26 +1,28 @@
-<!-- index.html -->
-<form id="loginForm">
-  <input type="email" id="email" placeholder="Correo" required />
-  <input type="password" id="password" placeholder="Contraseña" required />
-  <button type="submit">Ingresar</button>
-</form>
-<p id="errorMsg"></p>
+<!-- Firebase SDK - Versión compatible con <script> -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Configuración de Firebase -->
+    <script src="firebase-config.js"></script>
+    
 
-<script type="module">
-  import { auth, signInWithEmailAndPassword } from "./firebase.js";
+<input type="email" id="email" placeholder="Correo">
+<input type="password" id="password" placeholder="Contraseña">
+<button onclick="login()">Iniciar sesión</button>
 
-  document.getElementById("loginForm").addEventListener("submit", async (e) => {
-    e.preventDefault();
+
+<script>
+  function login() {
     const email = document.getElementById("email").value;
     const password = document.getElementById("password").value;
-
-    try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
-      localStorage.setItem("userEmail", user.email);
-      window.location.href = "escritorio.html";
-    } catch (error) {
-      document.getElementById("errorMsg").innerText = "Error al iniciar sesión";
-    }
-  });
+    
+    auth.signInWithEmailAndPassword(email, password)
+      .then(userCredential => {
+        sessionStorage.setItem("userEmail", email);
+        window.location.href = "escritorio.html"; 
+      })
+      .catch(error => alert("Error: " + error.message));
+  }
 </script>
+

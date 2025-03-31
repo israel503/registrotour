@@ -1,0 +1,100 @@
+<!-- Firebase SDK - Versión compatible con <script> -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    
+    <!-- Configuración de Firebase -->
+    <script src="firebase-config.js"></script>
+    
+    <!-- Formulario para editar tour -->
+    <input type="text" id="embarcacion" placeholder="Embarcación">
+    <input type="text" id="capitan" placeholder="Capitán">
+    <input type="text" id="ayudante" placeholder="Ayudante">
+    <input type="number" id="personas" placeholder="Número de personas">
+    <input type="date" id="fecha_tour">
+    <input type="time" id="hora_tour">
+    <input type="number" id="tiempo" placeholder="Duración en horas">
+    <input type="number" id="precio" placeholder="Precio">
+    <input type="text" id="pago" placeholder="Método de pago">
+    <input type="text" id="como_nos_conocio" placeholder="¿Cómo nos conoció?">
+    <input type="text" id="cliente" placeholder="Nombre del cliente">
+    <select id="gestionado_por">
+      <option value="info@israelmolina.com">Israel</option>
+      <option value="fran@manglarestour.com">Fran</option>
+    </select>
+    
+    <button onclick="editarTour()">Editar Tour</button>
+    
+    <script>
+      // Obtener el ID del tour desde la URL (por ejemplo, ?id=XXXX)
+      const urlParams = new URLSearchParams(window.location.search);
+      const tourId = urlParams.get("id");
+    
+      // Cargar los datos del tour para editarlo
+      if (tourId) {
+        const db = firebase.firestore();
+        db.collection("reservas").doc(tourId).get()
+          .then(doc => {
+            if (doc.exists) {
+              const data = doc.data();
+              document.getElementById("embarcacion").value = data.embarcacion;
+              document.getElementById("capitan").value = data.capitan;
+              document.getElementById("ayudante").value = data.ayudante;
+              document.getElementById("personas").value = data.personas;
+              document.getElementById("fecha_tour").value = data.fecha_tour;
+              document.getElementById("hora_tour").value = data.hora_tour;
+              document.getElementById("tiempo").value = data.tiempo;
+              document.getElementById("precio").value = data.precio;
+              document.getElementById("pago").value = data.pago;
+              document.getElementById("como_nos_conocio").value = data.como_nos_conocio;
+              document.getElementById("cliente").value = data.cliente;
+              document.getElementById("gestionado_por").value = data.gestionado_por;
+            } else {
+              alert("Tour no encontrado");
+              window.location.href = "escritorio.html"; // Redirigir si no se encuentra el tour
+            }
+          })
+          .catch(error => {
+            console.error("Error al obtener el tour:", error);
+          });
+      } else {
+        alert("ID del tour no encontrado");
+        window.location.href = "escritorio.html"; // Redirigir si no hay ID
+      }
+    
+      // Función para editar el tour
+      function editarTour() {
+        if (!tourId) {
+          alert("No se puede editar, falta el ID del tour.");
+          return;
+        }
+    
+        const tour = {
+          embarcacion: document.getElementById("embarcacion").value,
+          capitan: document.getElementById("capitan").value,
+          ayudante: document.getElementById("ayudante").value,
+          estado: "Pendiente",  // Puedes actualizarlo según tu lógica
+          personas: parseInt(document.getElementById("personas").value),
+          fecha_tour: document.getElementById("fecha_tour").value,
+          hora_tour: document.getElementById("hora_tour").value,
+          tiempo: parseInt(document.getElementById("tiempo").value),
+          precio: parseFloat(document.getElementById("precio").value),
+          pago: document.getElementById("pago").value,
+          como_nos_conocio: document.getElementById("como_nos_conocio").value,
+          cliente: document.getElementById("cliente").value,
+          gestionado_por: document.getElementById("gestionado_por").value
+        };
+    
+        // Actualizar el tour en Firestore
+        firebase.firestore().collection("reservas").doc(tourId).update(tour)
+          .then(() => {
+            alert("Tour actualizado exitosamente");
+            window.location.href = "escritorio.html"; // Redirige a la página de escritorio
+          })
+          .catch(error => {
+            console.error("Error al actualizar el tour:", error);
+            alert("Hubo un error al actualizar el tour.");
+          });
+      }
+    </script>
+    

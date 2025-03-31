@@ -1,45 +1,71 @@
-<script type="module" src="./firebase.js"></script>
-
-
-<table>
+<!-- Firebase SDK - Versión compatible con <script> -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  
+  <!-- Configuración de Firebase -->
+  <script src="firebase-config.js"></script>
+  
+  <!-- Aquí va la tabla de reservas -->
+  <table>
     <thead>
       <tr>
-        <th>Cliente</th>
         <th>Embarcación</th>
+        <th>Capitán</th>
+        <th>Personas</th>
         <th>Fecha</th>
         <th>Hora</th>
-        <th>Gestionado Por</th>
+        <th>Cliente</th>
       </tr>
     </thead>
-    <tbody id="reservasTable"></tbody>
+    <tbody id="tours-table"></tbody>
   </table>
-  
-  <script type="module">
-    import { db } from "./firebase.js";
-    import { collection, query, where, getDocs } from "firebase/firestore";
-  
-    const userEmail = localStorage.getItem("userEmail");
-    const reservasTable = document.getElementById("reservasTable");
-  
-    async function cargarReservas() {
-      const q = query(collection(db, "tours"), where("gestionadoPor", "==", "Israel")); // Filtrar por usuario logueado
-      const querySnapshot = await getDocs(q);
-  
-      reservasTable.innerHTML = "";
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        reservasTable.innerHTML += `
-          <tr>
-            <td>${data.cliente}</td>
-            <td>${data.embarcacion}</td>
-            <td>${data.fechaTour}</td>
-            <td>${data.horaTour}</td>
-            <td>${data.gestionadoPor}</td>
-          </tr>
-        `;
-      });
+    <!-- Botón para cerrar sesión -->
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  <script>
+    // Verifica si el usuario está autenticado
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        // Si no está autenticado, redirige al login
+        window.location.href = "index.html";
+      } else {
+        console.log("Usuario autenticado:", user.email);
+        
+        const userEmail = user.email; // Obtén el email del usuario autenticado
+        db.collection("reservas").where("gestionado_por", "==", userEmail).onSnapshot(snapshot => {
+          const table = document.getElementById("tours-table");
+          table.innerHTML = "";
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            table.innerHTML += `
+  <tr>
+    <td>${data.embarcacion}</td>
+    <td>${data.capitan}</td>
+    <td>${data.personas}</td>
+    <td>${data.fecha_tour}</td>
+    <td>${data.hora_tour}</td>
+    <td>${data.cliente}</td>
+    <td><a href="editar_tour.html?id=${doc.id}">Editar</a></td>
+  </tr>
+`;
+
+          });
+        });
+      }
+    });
+
+
+    // Función para cerrar sesión
+    function cerrarSesion() {
+      firebase.auth().signOut()
+        .then(() => {
+          // Redirige al login después de cerrar sesión
+          window.location.href = "index.html";
+        })
+        .catch(error => {
+          console.error("Error al cerrar sesión:", error.message);
+          alert("Hubo un error al cerrar sesión.");
+        });
     }
-  
-    cargarReservas();
   </script>
   
