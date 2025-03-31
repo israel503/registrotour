@@ -1,0 +1,55 @@
+<form id="tourForm">
+    <input type="text" id="embarcacion" placeholder="Embarcación" required />
+    <input type="text" id="capitan" placeholder="Capitán" required />
+    <input type="text" id="ayudante" placeholder="Ayudante" required />
+    <input type="text" id="estado" placeholder="Estado" required />
+    <input type="number" id="personas" placeholder="Número de personas" required />
+    <input type="date" id="fechaTour" required />
+    <input type="time" id="horaTour" required />
+    <input type="number" id="tiempo" placeholder="Tiempo (en horas)" required />
+    <input type="number" id="precio" placeholder="Precio" required />
+    <input type="text" id="pago" placeholder="Forma de pago" required />
+    <input type="text" id="conocio" placeholder="¿Cómo nos conoció?" required />
+    <input type="text" id="cliente" placeholder="Nombre del cliente" required />
+    <select id="gestionadoPor">
+      <option value="israel">Israel</option>
+      <option value="admin">Admin</option>
+    </select>
+    <button type="submit">Guardar Tour</button>
+  </form>
+  
+  <script type="module">
+    import { db, auth } from "./firebase.js";
+    import { collection, addDoc } from "firebase/firestore";
+  
+    document.getElementById("tourForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fechaHora = new Date().toISOString();
+  
+      const tour = {
+        embarcacion: document.getElementById("embarcacion").value,
+        capitan: document.getElementById("capitan").value,
+        ayudante: document.getElementById("ayudante").value,
+        estado: document.getElementById("estado").value,
+        personas: Number(document.getElementById("personas").value),
+        fechaTour: document.getElementById("fechaTour").value,
+        horaTour: document.getElementById("horaTour").value,
+        tiempo: Number(document.getElementById("tiempo").value),
+        precio: Number(document.getElementById("precio").value),
+        pago: document.getElementById("pago").value,
+        conocio: document.getElementById("conocio").value,
+        cliente: document.getElementById("cliente").value,
+        gestionadoPor: document.getElementById("gestionadoPor").value,
+        fechaRegistro: fechaHora,
+      };
+  
+      try {
+        await addDoc(collection(db, "tours"), tour);
+        alert("Tour registrado exitosamente");
+        window.location.href = "escritorio.html";
+      } catch (error) {
+        console.error("Error al registrar tour: ", error);
+      }
+    });
+  </script>
+  

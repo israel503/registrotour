@@ -1,0 +1,45 @@
+<script type="module" src="./firebase.js"></script>
+
+
+<table>
+    <thead>
+      <tr>
+        <th>Cliente</th>
+        <th>Embarcación</th>
+        <th>Fecha</th>
+        <th>Hora</th>
+        <th>Gestionado Por</th>
+      </tr>
+    </thead>
+    <tbody id="reservasTable"></tbody>
+  </table>
+  
+  <script type="module">
+    import { db } from "./firebase.js";
+    import { collection, query, where, getDocs } from "firebase/firestore";
+  
+    const userEmail = localStorage.getItem("userEmail");
+    const reservasTable = document.getElementById("reservasTable");
+  
+    async function cargarReservas() {
+      const q = query(collection(db, "tours"), where("gestionadoPor", "==", "Israel")); // Filtrar por usuario logueado
+      const querySnapshot = await getDocs(q);
+  
+      reservasTable.innerHTML = "";
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        reservasTable.innerHTML += `
+          <tr>
+            <td>${data.cliente}</td>
+            <td>${data.embarcacion}</td>
+            <td>${data.fechaTour}</td>
+            <td>${data.horaTour}</td>
+            <td>${data.gestionadoPor}</td>
+          </tr>
+        `;
+      });
+    }
+  
+    cargarReservas();
+  </script>
+  
