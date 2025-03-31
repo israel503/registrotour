@@ -33,4 +33,4 @@ como nos conocio? tipo texto
 cliente tipo texto
 gestionado por tipo selec de una lista (este campo es el que se va comparar posteriormente con el usuario accedido, por ejemplo si yo agrego la reserva y introduzco que fue gestionada por israel, cuando israel haga login en su sistema podrá ver todas las reservas donde su usuario es igual al campo "gestionado por" israel)
    
-      
+      f
