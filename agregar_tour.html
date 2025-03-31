@@ -39,8 +39,7 @@
     });
   
     function generarId() {
-  const now = new Date();
-  return now.toISOString().replace(/T/, '-').replace(/:/g, '-').slice(0, 19);
+      return new Date().toISOString();
 }
 
     // Función para agregar el tour

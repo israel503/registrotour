@@ -6,6 +6,29 @@
   <!-- Configuración de Firebase -->
   <script src="firebase-config.js"></script>
   
+  <!-- Contador de Tours y Ganancias -->
+  <div>
+    <h3>Tour gestionados: <span id="tour-count">0</span></h3>
+    <h3>Ganancias: $<span id="ganancias">0</span></h3>
+    
+    <label for="mes">Selecciona un mes:</label>
+    <select id="mes" onchange="filtrarPorMes()">
+      <option value="">Todos</option>
+      <option value="01">Enero</option>
+      <option value="02">Febrero</option>
+      <option value="03">Marzo</option>
+      <option value="04">Abril</option>
+      <option value="05">Mayo</option>
+      <option value="06">Junio</option>
+      <option value="07">Julio</option>
+      <option value="08">Agosto</option>
+      <option value="09">Septiembre</option>
+      <option value="10">Octubre</option>
+      <option value="11">Noviembre</option>
+      <option value="12">Diciembre</option>
+    </select>
+  </div>
+  
   <!-- Aquí va la tabla de reservas -->
   <table>
     <thead>
@@ -20,8 +43,10 @@
     </thead>
     <tbody id="tours-table"></tbody>
   </table>
-    <!-- Botón para cerrar sesión -->
-    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  
+  <!-- Botón para cerrar sesión -->
+  <button onclick="cerrarSesion()">Cerrar sesión</button>
+  
   <script>
     // Verifica si el usuario está autenticado
     firebase.auth().onAuthStateChanged(user => {
@@ -29,37 +54,98 @@
         // Si no está autenticado, redirige al login
         window.location.href = "index.html";
       } else {
-        console.log("Usuario autenticado:", user.email);
-        
         const userEmail = user.email; // Obtén el email del usuario autenticado
-        db.collection("reservas").where("gestionado_por", "==", userEmail).onSnapshot(snapshot => {
-          const table = document.getElementById("tours-table");
-          table.innerHTML = "";
-          snapshot.forEach(doc => {
-            const data = doc.data();
-            table.innerHTML += `
-  <tr>
-    <td>${data.embarcacion}</td>
-    <td>${data.capitan}</td>
-    <td>${data.personas}</td>
-    <td>${data.fecha_tour}</td>
-    <td>${data.hora_tour}</td>
-    <td>${data.cliente}</td>
-    <td><a href="editar_tour.html?id=${doc.id}">Editar</a></td>
-  </tr>
-`;
-
-          });
-        });
+        cargarTours(userEmail);
       }
     });
-
-
+  
+    // Función para cargar los tours y actualizar el contador
+    function cargarTours(userEmail) {
+      db.collection("reservas")
+        .where("gestionado_por", "==", userEmail)
+        .onSnapshot(snapshot => {
+          const table = document.getElementById("tours-table");
+          const tourCount = document.getElementById("tour-count");
+          const ganancias = document.getElementById("ganancias");
+          table.innerHTML = "";
+          let count = 0;
+          let totalGanancias = 0; // Ganancias acumuladas
+  
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const fechaTour = data.fecha_tour; // Fecha en formato yyyy-MM-dd
+            const mesTour = fechaTour.split("-")[1]; // Extraemos el mes
+  
+            table.innerHTML += `
+              <tr>
+                <td>${data.embarcacion}</td>
+                <td>${data.capitan}</td>
+                <td>${data.personas}</td>
+                <td>${fechaTour}</td>
+                <td>${data.hora_tour}</td>
+                <td>${data.cliente}</td>
+                <td><a href="editar_tour.html?id=${doc.id}">Editar</a></td>
+              </tr>
+            `;
+  
+            count++; // Contamos todos los tours gestionados
+          });
+  
+          // Calcular y mostrar el número de tours gestionados y las ganancias
+          totalGanancias = count * 5; // $5 por cada tour gestionado
+          tourCount.textContent = count;
+          ganancias.textContent = totalGanancias;
+        });
+    }
+  
+    // Función para filtrar tours por mes
+    function filtrarPorMes() {
+      const selectedMonth = document.getElementById("mes").value;
+      const userEmail = firebase.auth().currentUser.email; // Obtener el email del usuario autenticado
+  
+      db.collection("reservas")
+        .where("gestionado_por", "==", userEmail)
+        .onSnapshot(snapshot => {
+          const table = document.getElementById("tours-table");
+          const tourCount = document.getElementById("tour-count");
+          const ganancias = document.getElementById("ganancias");
+          table.innerHTML = "";
+          let count = 0;
+          let totalGanancias = 0; // Ganancias acumuladas
+  
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            const fechaTour = data.fecha_tour; // Fecha en formato yyyy-MM-dd
+            const mesTour = fechaTour.split("-")[1]; // Extraemos el mes
+  
+            // Filtrar por mes si se ha seleccionado un mes
+            if (!selectedMonth || mesTour === selectedMonth) {
+              table.innerHTML += `
+                <tr>
+                  <td>${data.embarcacion}</td>
+                  <td>${data.capitan}</td>
+                  <td>${data.personas}</td>
+                  <td>${fechaTour}</td>
+                  <td>${data.hora_tour}</td>
+                  <td>${data.cliente}</td>
+                  <td><a href="editar_tour.html?id=${doc.id}">Editar</a></td>
+                </tr>
+              `;
+              count++; // Solo contar los tours que coincidan con el mes seleccionado
+            }
+          });
+  
+          // Calcular y mostrar el número de tours gestionados y las ganancias
+          tourCount.textContent = count;
+          totalGanancias = count * 5; // $5 por cada tour gestionado
+          ganancias.textContent = totalGanancias;
+        });
+    }
+  
     // Función para cerrar sesión
     function cerrarSesion() {
       firebase.auth().signOut()
         .then(() => {
-          // Redirige al login después de cerrar sesión
           window.location.href = "index.html";
         })
         .catch(error => {
